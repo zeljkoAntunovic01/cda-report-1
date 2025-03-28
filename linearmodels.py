@@ -4,6 +4,11 @@ from sklearn.metrics import root_mean_squared_error
 import numpy as np
 import pandas as pd
 from data import DataProcessor
+from visualizer import visualize_linear_models_estimates
+
+TRAIN_DATA_DIR = "data/case1Data.csv"
+XNEW_DATA_DIR = "data/case1Data_Xnew.csv"
+RESULTS_DIR = "results/linearmodels/"
 
 def nested_cv_ols(df: pd.DataFrame, target_col='y', outer_cv_folds=10):
     outer_cv = KFold(n_splits=outer_cv_folds, shuffle=True, random_state=42)
@@ -96,7 +101,7 @@ def nested_cv_lasso(df: pd.DataFrame, target_col='y', outer_cv_folds=10, inner_c
         X_train = processor.preprocess_train_data(X_train_raw)
         X_test = processor.preprocess_test_data(X_test_raw)
 
-        grid = GridSearchCV(Lasso(max_iter=10000), {'alpha': alphas}, cv=inner_cv_folds, scoring='neg_mean_squared_error')
+        grid = GridSearchCV(Lasso(max_iter=10000, tol=1e-2), {'alpha': alphas}, cv=inner_cv_folds, scoring='neg_mean_squared_error')
         grid.fit(X_train, y_train)
         best_model = grid.best_estimator_
         selected_alphas.append(best_model.alpha)
@@ -140,7 +145,7 @@ def nested_cv_elasticnet(df: pd.DataFrame, target_col='y', outer_cv_folds=10, in
         X_test = processor.preprocess_test_data(X_test_raw)
 
         grid = GridSearchCV(
-            ElasticNet(max_iter=10000),
+            ElasticNet(max_iter=10000, tol=1e-2),
             {'alpha': alphas, 'l1_ratio': l1_ratios},
             cv=inner_cv_folds,
             scoring='neg_mean_squared_error'
@@ -168,7 +173,7 @@ def nested_cv_elasticnet(df: pd.DataFrame, target_col='y', outer_cv_folds=10, in
  
 
 if __name__ == "__main__":
-    df = pd.read_csv("data/case1Data.csv")
+    """ df = pd.read_csv(TRAIN_DATA_DIR)
     target_col = "y"
     outer_cv_folds = 10
     inner_cv_folds = 5
@@ -206,13 +211,13 @@ if __name__ == "__main__":
     ]
 
     summary_df = pd.DataFrame(summary_data, columns=["Model", "RMSE", "Alpha", "L1_Ratio"])
-    summary_df.to_csv("results/linear_models_rmse_estimates.csv", index=False)
-    print("Saved model performance summary to results/linear_models_rmse_estimates.csv")
+    summary_df.to_csv(f"{RESULTS_DIR}rmse_estimates.csv", index=False)
+    print(f"Saved model performance summary to {RESULTS_DIR}rmse_estimates.csv")
 
     # Refit best model on full dataset
-    df_full = pd.read_csv("data/case1Data.csv")
-    X_full_raw = df_full.drop(columns=["Y"])
-    y_full = df_full["Y"]
+    df_full = pd.read_csv(TRAIN_DATA_DIR)
+    X_full_raw = df_full.drop(columns=["y"])
+    y_full = df_full["y"]
 
     processor = DataProcessor()
     X_full = processor.preprocess_train_data(X_full_raw)
@@ -232,12 +237,14 @@ if __name__ == "__main__":
     print(f"Trained final {best_model} model on full dataset")
 
     # Load and preprocess x_new, make predictions
-    xnew_df = pd.read_csv("data/case1Data_Xnew.csv")
+    xnew_df = pd.read_csv(XNEW_DATA_DIR)
     X_new = processor.preprocess_test_data(xnew_df)
 
     y_new_pred = final_model.predict(X_new)
 
     # Save predictions
     pred_df = pd.DataFrame({"Prediction": y_new_pred})
-    pred_df.to_csv("results/linear_model_predictions_case1.csv", index=False)
-    print(f"Saved predictions of {best_model} model to results/linear_model_predictions_case1.csv")
+    pred_df.to_csv(f"{RESULTS_DIR}{best_model}_model_predictions.csv", index=False)
+    print(f"Saved predictions of {best_model} model to {RESULTS_DIR}{best_model}_model_predictions.csv") """
+
+    visualize_linear_models_estimates(f"{RESULTS_DIR}rmse_estimates.csv")
