@@ -173,7 +173,7 @@ def nested_cv_elasticnet(df: pd.DataFrame, target_col='y', outer_cv_folds=10, in
  
 
 if __name__ == "__main__":
-    """ df = pd.read_csv(TRAIN_DATA_DIR)
+    df = pd.read_csv(TRAIN_DATA_DIR)
     target_col = "y"
     outer_cv_folds = 10
     inner_cv_folds = 5
@@ -245,6 +245,6 @@ if __name__ == "__main__":
     # Save predictions
     pred_df = pd.DataFrame({"Prediction": y_new_pred})
     pred_df.to_csv(f"{RESULTS_DIR}{best_model}_model_predictions.csv", index=False)
-    print(f"Saved predictions of {best_model} model to {RESULTS_DIR}{best_model}_model_predictions.csv") """
+    print(f"Saved predictions of {best_model} model to {RESULTS_DIR}{best_model}_model_predictions.csv")
 
     visualize_linear_models_estimates(f"{RESULTS_DIR}rmse_estimates.csv")
