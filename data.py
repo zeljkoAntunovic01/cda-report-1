@@ -18,7 +18,7 @@ class DataProcessor:
         # Drop unnecessary columns
         if self.dropped_cols is None:
             self.dropped_cols = [col for col in df.columns if df[col].nunique() == 1]
-        df.drop(columns=self.dropped_cols, errors='ignore')
+        df = df.drop(columns=self.dropped_cols, errors='ignore')
 
         # Handle numerical missing values with KNN imputation, K = 5
         # 1. Identify x-columns (numerical)
@@ -30,14 +30,14 @@ class DataProcessor:
         # 3. Apply KNN imputation
         if self.num_imputer is None:
             self.num_imputer = KNNImputer(n_neighbors=5)
-            x_imputed = pd.DataFrame(self.num_imputer.fit_transform(x_data), columns=x_cols)
+            x_imputed = pd.DataFrame(self.num_imputer.fit_transform(x_data), columns=x_cols, index=x_data.index)
         else:
-            x_imputed = pd.DataFrame(self.num_imputer.transform(x_data), columns=x_cols)
+            x_imputed = pd.DataFrame(self.num_imputer.transform(x_data), columns=x_cols, index=x_data.index)
 
         # 4. Replace original x_ columns with imputed ones
         df[x_cols] = x_imputed
 
-        assert df[x_cols].isnull().sum() == 0, "Missing values in x_ columns after imputation"
+        assert df[x_cols].isnull().sum().sum() == 0, "Missing values in x_ columns after imputation"
 
         # Handle categorical missing values with KNN imputation, K = 5
         # 1. Identify categorical columns
@@ -49,9 +49,9 @@ class DataProcessor:
         # 3. KNN impute (treating as numeric)
         if self.cat_imputer is None:
             self.cat_imputer = KNNImputer(n_neighbors=5)
-            c_imputed = pd.DataFrame(self.cat_imputer.fit_transform(c_data), columns=c_cols)
+            c_imputed = pd.DataFrame(self.cat_imputer.fit_transform(c_data), columns=c_cols, index=c_data.index)
         else:
-            c_imputed = pd.DataFrame(self.cat_imputer.transform(c_data), columns=c_cols)
+            c_imputed = pd.DataFrame(self.cat_imputer.transform(c_data), columns=c_cols, index=c_data.index)
 
         # 4. Round to nearest valid class (assumed: 71 to 75)
         valid_classes = np.array([71, 72, 73, 74, 75])
@@ -67,7 +67,7 @@ class DataProcessor:
         # 6. Replace original columns in df
         df[c_cols] = c_imputed
 
-        assert df[c_cols].isnull().sum() == 0, "Missing values in categorical columns after imputation"
+        assert df[c_cols].isnull().sum().sum() == 0, "Missing values in categorical columns after imputation"
         return df
 
     def preprocess_train_data(self, df: pd.DataFrame) -> pd.DataFrame:
